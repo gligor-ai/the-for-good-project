@@ -87,7 +87,8 @@ check_state() {  # $1 = sha  -> success|failure|pending|none
 set_check() {  # $1 sha, $2 state(success|failure), $3 desc, $4 url
   [ "$DRY_RUN" = 1 ] && { info "[dry-run] would set check $REVIEW_CHECK_CONTEXT=$2 on $1"; return 0; }
   gh api -X POST "repos/$OWNER/$NAME/statuses/$1" \
-    -f state="$2" -f context="$REVIEW_CHECK_CONTEXT" -f description="$3" -f target_url="$4" >/dev/null
+    -f state="$2" -f context="$REVIEW_CHECK_CONTEXT" -f description="$3" -f target_url="$4" >/dev/null 2>&1 \
+    || warn "Couldn't set the merge check (needs write access). Your review is recorded — a maintainer's merge_ready.sh will validate it and merge."
 }
 
 review_one() {  # $1 = PR number
