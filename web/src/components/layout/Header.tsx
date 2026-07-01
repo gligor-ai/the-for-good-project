@@ -9,10 +9,12 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/", label: "Dashboard", end: true },
   { to: "/board", label: "Board" },
+  { to: "/contribute", label: "Get started" },
   { to: "/findings", label: "Findings" },
   { to: "/sources", label: "Sources" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/review", label: "Review" },
+  { to: "/methodology", label: "Method" },
 ];
 
 export function Header({ repoUrl }: { repoUrl?: string }) {
