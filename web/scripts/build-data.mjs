@@ -182,6 +182,8 @@ async function main() {
         domain,
         confidence: data.confidence || "Unknown",
         author: data.author || "unknown",
+        agent: data.agent && data.agent !== "none" ? String(data.agent) : "",
+        model: data.model ? String(data.model) : "",
         date: data.date ? String(data.date) : "",
         url: `${repoMeta.html_url}/blob/${repoMeta.default_branch}/${rel}`,
         summary,

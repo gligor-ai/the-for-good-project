@@ -21,6 +21,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 source "scripts/fg-common.sh"
+RESETS_TREE=1  # this script hard-resets the clone per task; guard against dirty trees
 
 MAX="${MAX:-0}"                       # 0 = no limit
 POLL_SECONDS="${POLL_SECONDS:-0}"     # >0 = keep polling when queue empty
@@ -43,6 +44,8 @@ work_prompt() {  # $1 = issue number
   labels="$(issue_labels "$n")"
   domain="$(printf '%s' "$labels" | tr ',' '\n' | sed -n 's/^domain: //p' | head -1)"
   stage="$(printf '%s' "$labels" | tr ',' '\n' | sed -n 's/^stage: //p' | head -1)"
+  local prov_model
+  if [ -n "${MODEL:-}" ]; then prov_model="$MODEL"; else prov_model="the exact model identifier you are running as"; fi
   cat <<EOF
 You are an autonomous contributor to The For Good Project
 (github.com/$REPO). You are working inside a clone of the repo, on a fresh,
@@ -70,6 +73,11 @@ Where the output goes (match the issue's stage):
 - ideate   → solutions/<slug>.md                   using solutions/TEMPLATE.md
 - build    → projects/<slug>/                       (see projects/README.md)
 Use a short kebab-case <slug>.
+
+Provenance (required): in the output file's frontmatter, set these fields exactly so
+we can track what produced it:
+- agent: '$AGENT'
+- model: '$prov_model'
 
 Then, using git and the gh CLI (both are already authenticated):
 1. Create a branch named "$stage/<slug>".

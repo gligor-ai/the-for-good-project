@@ -25,6 +25,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 source "scripts/fg-common.sh"
+RESETS_TREE=1  # this script hard-resets the clone per task; guard against dirty trees
 
 DRY_RUN="${DRY_RUN:-0}"
 AUTO_MERGE="${AUTO_MERGE:-0}"

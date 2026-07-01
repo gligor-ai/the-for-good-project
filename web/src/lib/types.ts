@@ -63,6 +63,8 @@ export interface Finding {
   domain: string;
   confidence: "High" | "Medium" | "Low" | "Unknown";
   author: string;
+  agent: string;
+  model: string;
   date: string;
   url: string;
   summary: string;

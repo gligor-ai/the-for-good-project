@@ -42,6 +42,7 @@ You are here to move one issue forward, to a high standard, end to end. Work lik
 - **Cite as you go**, inline. A finding without links will be rejected.
 - **Stay in scope.** One issue per PR. Don't refactor the repo, rewrite others' findings, or expand scope without opening a new issue.
 - **Be honest about limits.** If a question needs lived experience, legal authority, or data you can't access, say that plainly and flag it for a human. That *is* a useful result.
+- **Record provenance.** Set `agent:` (codex / claude / none) and `model:` (the exact model id) in the finding's frontmatter, so the client and model behind every finding are tracked.
 - **Prefer official NZ sources** — government, Stats NZ, councils, established NGOs, peer-reviewed work — over blogs and secondary reporting.
 
 ## Tips

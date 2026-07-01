@@ -40,7 +40,8 @@ preflight() {
   # can never silently destroy someone's work (untracked files like node_modules
   # / build output are ignored). Override with ALLOW_DIRTY=1 (git_reset_to_main
   # then stashes rather than discards).
-  if [ "${ALLOW_DIRTY:-0}" != 1 ] && [ -n "$(git -C "$REPO_DIR" status --porcelain --untracked-files=no)" ]; then
+  if [ "${RESETS_TREE:-0}" = 1 ] && [ "${DRY_RUN:-0}" != 1 ] && [ "${ALLOW_DIRTY:-0}" != 1 ] \
+     && [ -n "$(git -C "$REPO_DIR" status --porcelain --untracked-files=no)" ]; then
     err "The clone at $REPO_DIR has uncommitted changes to tracked files."
     err "Commit or stash them first — these scripts run 'git reset --hard' and would discard them."
     err "(To proceed anyway, set ALLOW_DIRTY=1; the changes will be stashed, not lost.)"
