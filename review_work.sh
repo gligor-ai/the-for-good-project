@@ -2,9 +2,9 @@
 #
 # review_work.sh — adversarially review open PRs before they can merge.
 #
-# For each open PR that hasn't passed review yet, run an AI agent (codex or
-# claude) whose job is to REFUTE the work against the project method, then post
-# the review and set the required "for-good/adversarial-review" status check.
+# For each open PR that hasn't passed review yet, run an AI agent (codex,
+# claude, or hermes) whose job is to REFUTE the work against the project method,
+# then post the review and set the required "for-good/adversarial-review" status check.
 # On PASS it approves (and can auto-merge); on NEEDS_WORK it requests changes.
 #
 # INTEGRITY RULE: an adversarial review may NOT be done by the PR's author.
@@ -16,15 +16,17 @@
 # Usage:
 #   REVIEW_GITHUB_TOKEN=<bot-pat> ./review_work.sh          # review all open PRs
 #   REVIEW_GITHUB_TOKEN=<bot-pat> AGENT=claude ./review_work.sh
+#   REVIEW_GITHUB_TOKEN=<bot-pat> AGENT=hermes ./review_work.sh
 #   REVIEW_GITHUB_TOKEN=<bot-pat> AUTO_MERGE=1 ./review_work.sh
 #   PR=7 ./review_work.sh                                    # a single PR
 #   DRY_RUN=1 ./review_work.sh
 #
 # Env: REVIEW_GITHUB_TOKEN AGENT MODEL AUTO_MERGE PR MAX POLL_SECONDS DRY_RUN
-#      AGENT_TIMEOUT FOR_GOOD_REPO REPO_DIR
+#      AGENT_TIMEOUT PROVIDER HERMES_PROFILE HERMES_FLAGS FOR_GOOD_REPO REPO_DIR
 set -euo pipefail
 cd "$(dirname "$0")"
 source "scripts/fg-common.sh"
+RUNS_AGENT=1
 RESETS_TREE=1  # this script hard-resets the clone per task; guard against dirty trees
 
 DRY_RUN="${DRY_RUN:-0}"

@@ -2,8 +2,8 @@
 #
 # start_work.sh — autonomously work The For Good Project's queue.
 #
-# Loops: claim the next available issue, run an AI agent (codex or claude) to do
-# the work following the project method, then move the issue to "in review" when
+# Loops: claim the next available issue, run an AI agent (codex, claude, or
+# hermes) to do the work following the project method, then move the issue to "in review" when
 # the agent opens a PR. The SCRIPT owns every status transition — the agent just
 # does the work and opens the PR — so tracking stays correct no matter which
 # agent runs or how it behaves.
@@ -11,16 +11,18 @@
 # Usage:
 #   ./start_work.sh                 # work issues until the queue is empty
 #   AGENT=claude ./start_work.sh    # use `claude -p` instead of `codex`
+#   AGENT=hermes ./start_work.sh    # use `hermes chat` instead of `codex`
 #   STAGE=research ./start_work.sh  # only pick up research-stage issues
 #   MAX=1 ./start_work.sh           # do a single issue and stop
 #   DRY_RUN=1 ./start_work.sh       # show what it would do, touch nothing
 #   MODEL=gpt-5.5 ./start_work.sh   # override the agent model
 #
-# Env: AGENT(codex|claude) MAX STAGE POLL_SECONDS DRY_RUN MODEL AGENT_TIMEOUT
-#      FOR_GOOD_REPO REPO_DIR
+# Env: AGENT(codex|claude|hermes) MAX STAGE POLL_SECONDS DRY_RUN MODEL
+#      AGENT_TIMEOUT PROVIDER HERMES_PROFILE HERMES_FLAGS FOR_GOOD_REPO REPO_DIR
 set -euo pipefail
 cd "$(dirname "$0")"
 source "scripts/fg-common.sh"
+RUNS_AGENT=1
 RESETS_TREE=1  # this script hard-resets the clone per task; guard against dirty trees
 
 MAX="${MAX:-0}"                       # 0 = no limit

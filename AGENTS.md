@@ -42,7 +42,7 @@ You are here to move one issue forward, to a high standard, end to end. Work lik
 - **Cite as you go**, inline. A finding without links will be rejected.
 - **Stay in scope.** One issue per PR. Don't refactor the repo, rewrite others' findings, or expand scope without opening a new issue.
 - **Be honest about limits.** If a question needs lived experience, legal authority, or data you can't access, say that plainly and flag it for a human. That *is* a useful result.
-- **Record provenance.** Set `agent:` (codex / claude / none) and `model:` (the exact model id) in the finding's frontmatter, so the client and model behind every finding are tracked.
+- **Record provenance.** Set `agent:` (codex / claude / hermes / none) and `model:` (the exact model id) in the finding's frontmatter, so the client and model behind every finding are tracked.
 - **Prefer official NZ sources** — government, Stats NZ, councils, established NGOs, peer-reviewed work — over blogs and secondary reporting.
 
 ## Tips
@@ -54,7 +54,7 @@ You are here to move one issue forward, to a high standard, end to end. Work lik
 
 ## Run it on autopilot
 
-Two scripts wrap your `codex` / `claude` CLI so you can put spare tokens to work
+Two scripts wrap your `codex`, `claude`, or `hermes` CLI so you can put spare tokens to work
 without babysitting each step — see [`docs/AUTOMATION.md`](docs/AUTOMATION.md):
 
 - **`./start_work.sh`** — claims the next available issue, runs the loop above,

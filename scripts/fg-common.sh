@@ -5,10 +5,13 @@
 REPO="${FOR_GOOD_REPO:-thecolab-ai/the-for-good-project}"
 OWNER="${REPO%%/*}"
 NAME="${REPO##*/}"
-AGENT="${AGENT:-codex}"                 # codex | claude
+AGENT="${AGENT:-codex}"                 # codex | claude | hermes
 MODEL="${MODEL:-}"                       # optional model override
+PROVIDER="${PROVIDER:-}"                 # optional provider override (Hermes only)
+HERMES_PROFILE="${HERMES_PROFILE:-}"     # optional Hermes profile override
 AGENT_TIMEOUT="${AGENT_TIMEOUT:-2400}"   # seconds per agent run (0 = none)
 REVIEW_CHECK_CONTEXT="for-good/adversarial-review"
+RUNS_AGENT="${RUNS_AGENT:-0}"             # scripts that call run_agent set this to 1
 
 # ---- pretty logging ----
 c_reset=$'\e[0m'; c_dim=$'\e[2m'; c_blue=$'\e[34m'; c_green=$'\e[32m'; c_yellow=$'\e[33m'; c_red=$'\e[31m'; c_bold=$'\e[1m'
@@ -25,7 +28,9 @@ preflight() {
   for bin in git gh jq; do
     command -v "$bin" >/dev/null 2>&1 || { err "missing dependency: $bin"; missing=1; }
   done
-  command -v "$AGENT" >/dev/null 2>&1 || { err "agent '$AGENT' not on PATH (set AGENT=codex|claude)"; missing=1; }
+  if [ "$RUNS_AGENT" = 1 ]; then
+    command -v "$AGENT" >/dev/null 2>&1 || { err "agent '$AGENT' not on PATH (set AGENT=codex|claude|hermes)"; missing=1; }
+  fi
   gh auth status >/dev/null 2>&1 || { err "gh is not authenticated — run: gh auth login"; missing=1; }
   [ "$missing" = 0 ] || exit 1
 
@@ -74,7 +79,7 @@ issue_field()   { gh issue view "$1" --repo "$REPO" --json "$2" --jq ".$2"; }
 available_issues() {
   gh issue list --repo "$REPO" --state open --label "status: available" \
     --json number,createdAt,labels --limit 100 \
-    --jq "[.[] $( [ -n "$STAGE" ] && printf '| select(.labels|map(.name)|index("stage: %s"))' "$STAGE" )] | sort_by(.createdAt) | .[].number"
+    --jq "[.[] $( [ -n "${STAGE:-}" ] && printf '| select(.labels|map(.name)|index("stage: %s"))' "$STAGE" )] | sort_by(.createdAt) | .[].number"
 }
 
 # The open PR (if any) that closes a given issue number, via GraphQL closing refs.
@@ -111,6 +116,13 @@ run_agent() {
       ( cd "$REPO_DIR" && $tmo claude -p "$prompt" \
         --permission-mode "${CLAUDE_PERMISSION_MODE:-bypassPermissions}" \
         ${MODEL:+--model "$MODEL"} )
+      ;;
+    hermes)
+      ( cd "$REPO_DIR" && $tmo hermes ${HERMES_PROFILE:+--profile "$HERMES_PROFILE"} chat -Q \
+        ${HERMES_FLAGS:---yolo --source tool} \
+        ${MODEL:+--model "$MODEL"} \
+        ${PROVIDER:+--provider "$PROVIDER"} \
+        -q "$prompt" )
       ;;
     *) err "unknown AGENT '$AGENT'"; return 2 ;;
   esac

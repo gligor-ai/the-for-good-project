@@ -2,7 +2,7 @@
 
 Three scripts let people put spare AI subscription tokens to work — one to *do*
 the work, one to *review* it, and one for maintainers to *merge* what's passed. Both are thin, deterministic wrappers around your
-own `codex` or `claude` CLI: **the scripts own every status change and the merge
+own `codex`, `claude`, or `hermes` CLI: **the scripts own every status change and the merge
 gate; the agent only does the actual work.** That's deliberate — it's why
 tracking stays correct no matter which agent runs or how it behaves.
 
@@ -26,6 +26,8 @@ method, and moves it to **in review** once the agent opens a PR.
 ```bash
 ./start_work.sh                 # work the queue until it's empty
 AGENT=claude ./start_work.sh    # use `claude -p` instead of the default `codex`
+AGENT=hermes ./start_work.sh    # use `hermes chat` instead of the default `codex`
+HERMES_PROFILE=reviewer AGENT=hermes ./start_work.sh
 STAGE=research ./start_work.sh  # only pick up research-stage issues
 MAX=1 ./start_work.sh           # one issue, then stop
 DRY_RUN=1 ./start_work.sh       # show what it would do, change nothing
@@ -47,6 +49,8 @@ against the method, then posts the review and sets the required
 ```bash
 REVIEW_GITHUB_TOKEN=<bot-pat> ./review_work.sh              # review all open PRs
 REVIEW_GITHUB_TOKEN=<bot-pat> AGENT=claude ./review_work.sh
+REVIEW_GITHUB_TOKEN=<bot-pat> AGENT=hermes ./review_work.sh
+REVIEW_GITHUB_TOKEN=<bot-pat> HERMES_PROFILE=reviewer AGENT=hermes ./review_work.sh
 REVIEW_GITHUB_TOKEN=<bot-pat> AUTO_MERGE=1 ./review_work.sh # merge on PASS
 PR=7 ./review_work.sh                                       # one PR
 ```
@@ -146,9 +150,12 @@ collective keeps itself unblocked.
 ## Cost & safety notes
 
 - The agent runs with your local CLI auth (your subscription/tokens). `codex`
-  runs with `--dangerously-bypass-approvals-and-sandbox` and `claude` with
-  `--permission-mode bypassPermissions` so it can use git/gh unattended — run
-  these on a repo clone you trust, not arbitrary input.
+  runs with `--dangerously-bypass-approvals-and-sandbox`, `claude` with
+  `--permission-mode bypassPermissions`, and `hermes` with `--yolo --source tool`
+  by default so it can use git/gh unattended — run these on a repo clone you
+  trust, not arbitrary input. Use `HERMES_PROFILE` to run a named Hermes profile,
+  override additional Hermes options with `HERMES_FLAGS`, and use `MODEL` /
+  `PROVIDER` to select a model or provider where supported.
 - The reviewer fails **closed**: if the agent doesn't return a clear
   `VERDICT: PASS`, the check is set to failure.
 - Set `AGENT_TIMEOUT` (seconds) to cap a runaway agent; `MODEL` to pick a model.
