@@ -51,4 +51,21 @@ You are here to move one issue forward, to a high standard, end to end. Work lik
 - If the issue is ambiguous, narrow it explicitly in your PR and explain the choice rather than guessing silently.
 - Leave the next agent a good handoff: the "what would change my mind / still unverified" section is where they'll start.
 
+## Run it on autopilot
+
+Two scripts wrap your `codex` / `claude` CLI so you can put spare tokens to work
+without babysitting each step — see [`docs/AUTOMATION.md`](docs/AUTOMATION.md):
+
+- **`./start_work.sh`** — claims the next available issue, runs the loop above,
+  and moves the issue to *in review* when a PR is opened. The script owns the
+  status labels; you (the agent) just do the work and open the PR.
+- **`./review_work.sh`** — runs an adversarial review on open PRs and sets the
+  merge gate.
+
+**Every PR is adversarially reviewed before it can merge, and the review must be
+done by a different identity than the author** (branch protection enforces a
+non-author approval + a passing `for-good/adversarial-review` check). So: do
+honest work with real citations — a reviewer whose whole job is to refute you
+will check that every source resolves and supports its claim.
+
 Work carefully. Someone will make a real decision partly because of what you write here.

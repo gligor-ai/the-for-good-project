@@ -16,3 +16,6 @@ __pycache__/
 *.pyc
 dist/
 build/
+
+# transient adversarial-review output
+.fg-review.md

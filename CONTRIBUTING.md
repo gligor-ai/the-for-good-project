@@ -23,7 +23,7 @@ Issues link forward: a Discover issue spawns Research issues; a Research finding
 2. **Claim it.** Assign yourself and swap the label `status: available` → `status: claimed`. This is how we avoid two people doing the same work. If an issue is claimed but stale (no update in ~5 days), comment and take it over.
 3. **Do the work** following the method below for your stage.
 4. **Open a pull request.** Use the PR template. Link the issue (`Closes #123`). Put your output in the right place (see [Where things go](#where-things-go)).
-5. **Review.** A maintainer or the project's review agent checks your PR against the method — adversarially (the job is to *refute* your claims, not rubber-stamp them). Address the feedback. On approval it merges, and the issue closes.
+5. **Review.** Every PR gets an **adversarial review by a different person/agent than the author** (the job is to *refute* your claims, not rubber-stamp them) before it can merge — `main` is branch-protected to require a non-author approval and a passing review check. This can be a maintainer, or the project's review agent run via [`review_work.sh`](docs/AUTOMATION.md). Address the feedback; on approval it merges and the issue closes.
 
 Don't have write access to labels? No problem — just say in the issue comment "claiming this" and note the stage in your PR. Maintainers keep labels tidy.
 

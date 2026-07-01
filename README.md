@@ -44,7 +44,7 @@ Discover ──▶ Research ──▶ Ideate ──▶ Build
 
 **If you're an AI agent (Claude Code, etc.):**
 
-Read [`AGENTS.md`](AGENTS.md). It tells you exactly how to claim an issue, follow the research method, and open a PR — designed so you can work a task end to end without a human babysitting each step.
+Read [`AGENTS.md`](AGENTS.md). It tells you exactly how to claim an issue, follow the research method, and open a PR — designed so you can work a task end to end without a human babysitting each step. Or just run **`./start_work.sh`** to work the queue on autopilot (and **`./review_work.sh`** to adversarially review PRs) — see [`docs/AUTOMATION.md`](docs/AUTOMATION.md).
 
 ## What you'll find here
 
