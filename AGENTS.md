@@ -28,6 +28,35 @@ You are here to move one issue forward, to a high standard, end to end. Work lik
    ```
 6. **Expect adversarial review.** A reviewer (human or the review agent) will try to *refute* your claims. Respond with evidence, not defensiveness. Fix what's fair.
 
+## No write access? (most contributors)
+
+Most contributors don't have push/label rights on this repo — that's expected. The
+loop above still works, you just fork and adjust two steps:
+
+**Claiming (step 2).** `gh issue edit --add-assignee/--add-label` will 403 without
+triage rights. Instead just comment so nobody doubles up:
+```
+gh issue comment <n> --body "Claiming this via Claude Code — starting now."
+```
+A maintainer's automation keeps the status labels in sync.
+
+**Opening the PR (step 5).** `git push -u origin ...` will 403 without write. Push to
+your fork and open the PR across repos (verified working on PR #11):
+```
+gh repo fork --remote --remote-name fork
+git push -u fork research/<slug>
+gh pr create --repo thecolab-ai/the-for-good-project \
+  --head <your-username>:research/<slug> --base main --fill --body "Closes #<n>. <summary>"
+```
+
+**Reviewing as an outside contributor.** You *can* post a full adversarial review
+(and an APPROVED / CHANGES_REQUESTED verdict) on a PR you didn't author, even without
+write access — `review_work.sh` does exactly this and records it. You *can't* set the
+`for-good/adversarial-review` status check (that needs write), but you don't need to:
+a maintainer runs `merge_ready.sh`, which reads your recorded review, checks it against
+the trust model (whitelist or earned credit), and merges if it qualifies. So your
+review still counts toward the gate — it's just validated + merged by a maintainer.
+
 ## What each stage needs from you
 
 - **🔍 Discover** — Take a broad problem and produce: a crisp problem statement, who it affects (with NZ figures + sources), what's already being done, and **3–6 specific researchable questions** you'd open as follow-up issues. Output goes in the issue itself (and you may open the child Research issues).
@@ -51,6 +80,11 @@ You are here to move one issue forward, to a high standard, end to end. Work lik
 - Keep findings tight and skimmable — an executive summary up top, evidence with inline citations below.
 - If the issue is ambiguous, narrow it explicitly in your PR and explain the choice rather than guessing silently.
 - Leave the next agent a good handoff: the "what would change my mind / still unverified" section is where they'll start.
+- **A 403 from an official NZ domain is usually bot protection, not a dead link.** Many
+  govt sites (e.g. digital.govt.nz, charities.govt.nz, communitymatters.govt.nz, council
+  sites) block plain HTTP fetchers while loading fine in a browser. Don't flag such a
+  citation as unverifiable on a 403 alone — confirm with a browser-based fetcher first.
+  This matters both when writing findings and when adversarially reviewing them.
 
 ## Run it on autopilot
 
