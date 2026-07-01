@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-01T21:42:06.933Z",
+  "generatedAt": "2026-07-01T22:43:35.529Z",
   "repo": {
     "owner": "thecolab-ai",
     "name": "the-for-good-project",
@@ -11,18 +11,20 @@
     "totalIssues": 6,
     "openIssues": 5,
     "closedIssues": 1,
-    "totalPRs": 0,
-    "openPRs": 0,
-    "mergedPRs": 0,
+    "totalPRs": 2,
+    "openPRs": 1,
+    "mergedPRs": 1,
     "findings": 0,
-    "contributors": 1,
+    "contributors": 2,
+    "reviews": 0,
     "sources": 0,
     "byStage": {
       "research": 2,
       "discover": 3
     },
     "byStatus": {
-      "available": 5
+      "in-review": 1,
+      "available": 4
     },
     "byDomain": {
       "ai-policy": 1,
@@ -59,6 +61,52 @@
   ],
   "issues": [
     {
+      "number": 8,
+      "title": "fix(web): make dashboard mobile responsive",
+      "state": "closed",
+      "isPR": true,
+      "merged": true,
+      "url": "https://github.com/thecolab-ai/the-for-good-project/pull/8",
+      "body": "## What\nFixes the Dashboard cards blowing out the page width on mobile (reported by Matt) — specifically the **Open work by domain** chart and **Recent activity** components.\n\n## Root cause\nThe recharts `ResponsiveContainer` sat inside grid items with the default `min-width: auto`, so they couldn't shrink below their content (including the 120px Y-axis) and forced the page wider than the mobile viewport. There was also no global `overflow-x` guard.\n\n## Changes\n- Add `min-w-0` to the grid children so they can shrink properly\n- Wrap the chart in a `min-w-0 overflow-hidden` container; trim Y-axis width 120 -> 96 for small screens\n- Truncate the recent-activity meta line\n- Harden the review callout flex (`min-w-0` + `shrink-0`) so it wraps cleanly instead of overflowing\n- Add an `overflow-x-hidden` safety net on `<main>`\n\n## Verified\n- `tsc -b && vite build` passes clean locally\n\nCloses the mobile width issue on the dashboard page.",
+      "stage": "none",
+      "status": "none",
+      "domain": null,
+      "labels": [],
+      "author": {
+        "login": "thecolab-clawd",
+        "avatar": "https://avatars.githubusercontent.com/u/298857011?v=4",
+        "url": "https://github.com/thecolab-clawd"
+      },
+      "assignees": [],
+      "createdAt": "2026-07-01T22:42:54Z",
+      "updatedAt": "2026-07-01T22:43:07Z",
+      "comments": 0,
+      "reactions": 0
+    },
+    {
+      "number": 7,
+      "title": "research: document NZ public sector AI guidance",
+      "state": "open",
+      "isPR": true,
+      "merged": false,
+      "url": "https://github.com/thecolab-ai/the-for-good-project/pull/7",
+      "body": "Closes #6.\n\n## What changed\n\nAdds a cited research finding at `research/findings/ai-policy/nz-public-sector-ai-guidance.md` answering what official AI guidance, frameworks, and policies currently exist for New Zealand public-sector/public-service AI use.\n\n## Summary\n\n- Maps the GCDO-led public-service AI framework, GenAI guidance, work programme, and toolkit.\n- Captures Stats NZ/Data.govt algorithm-governance material, including the Algorithm Charter and Algorithm Impact Assessment process.\n- Notes relevant privacy, records, procurement, and agency-level policy material, plus the national light-touch AI policy context.\n- Marks confidence, load-bearing claims, limits, and follow-up questions.\n\n## Validation\n\n- `git diff --cached --check`\n- `git diff --check`\n- `gh issue view 6 --json number,title,labels,assignees,state,url`\n- `gh search issues --repo thecolab-ai/the-for-good-project \"AI guidance public sector\" --state open --json number,title,url,state`\n\nNo parent issue was identified in #6.",
+      "stage": "none",
+      "status": "none",
+      "domain": null,
+      "labels": [],
+      "author": {
+        "login": "adam91holt",
+        "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+        "url": "https://github.com/adam91holt"
+      },
+      "assignees": [],
+      "createdAt": "2026-07-01T21:56:02Z",
+      "updatedAt": "2026-07-01T21:56:02Z",
+      "comments": 0,
+      "reactions": 0
+    },
+    {
       "number": 6,
       "title": "[Research] What NZ government AI guidance already exists for the public sector?",
       "state": "open",
@@ -66,12 +114,12 @@
       "url": "https://github.com/thecolab-ai/the-for-good-project/issues/6",
       "body": "**The question**\nWhat official AI guidance, frameworks, or policies already exist for the New Zealand public sector (e.g. from DIA, the Public Service Commission, Stats NZ, GCDO), and what do they actually require or recommend?\n\n**Why it matters / what decision it informs**\nGrounds any AI-policy work in what NZ has already published, so we build on it rather than reinventing or contradicting it.\n\n**Output:** a cited finding in `research/findings/ai-policy/` using `research/TEMPLATE.md`. Prefer primary government sources; mark confidence; note anything dated or superseded.\n\n_Good first issue: clear scope, official sources, immediately useful as a reference._",
       "stage": "research",
-      "status": "available",
+      "status": "in-review",
       "domain": "ai-policy",
       "labels": [
         "good first issue",
         "stage: research",
-        "status: available",
+        "status: in-review",
         "domain: ai-policy"
       ],
       "author": {
@@ -79,10 +127,30 @@
         "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
         "url": "https://github.com/adam91holt"
       },
-      "assignees": [],
+      "assignees": [
+        {
+          "login": "adam91holt",
+          "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+          "url": "https://github.com/adam91holt"
+        }
+      ],
       "createdAt": "2026-07-01T21:25:40Z",
-      "updatedAt": "2026-07-01T21:25:40Z",
-      "comments": 0,
+      "updatedAt": "2026-07-01T22:27:29Z",
+      "comments": 2,
+      "commentsList": [
+        {
+          "author": "adam91holt",
+          "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+          "body": "Claiming this - starting now.",
+          "createdAt": "2026-07-01T21:49:57Z"
+        },
+        {
+          "author": "adam91holt",
+          "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+          "body": "🔍 Work submitted in #7 — moving to **in review**. It needs an adversarial review from a *different identity than the author* before it can merge (see `review_work.sh` / branch protection).",
+          "createdAt": "2026-07-01T22:27:29Z"
+        }
+      ],
       "reactions": 0
     },
     {
@@ -189,8 +257,16 @@
       },
       "assignees": [],
       "createdAt": "2026-07-01T21:25:34Z",
-      "updatedAt": "2026-07-01T21:25:34Z",
-      "comments": 0,
+      "updatedAt": "2026-07-01T22:18:05Z",
+      "comments": 1,
+      "commentsList": [
+        {
+          "author": "karenjleacock",
+          "avatar": "https://avatars.githubusercontent.com/u/256644861?v=4",
+          "body": "Check out https://www.fundsorter.com/ \nIt's about a year old? They are also doing great things in the training space.\nI can't answer the questions you pose (and don't have spare tokens), but it feels like they are leading in this space in NZ.",
+          "createdAt": "2026-07-01T22:18:05Z"
+        }
+      ],
       "reactions": 0
     },
     {
@@ -224,32 +300,150 @@
       "reactions": 0
     }
   ],
-  "reviewQueue": [],
+  "reviewQueue": [
+    {
+      "number": 6,
+      "title": "[Research] What NZ government AI guidance already exists for the public sector?",
+      "state": "open",
+      "isPR": false,
+      "url": "https://github.com/thecolab-ai/the-for-good-project/issues/6",
+      "body": "**The question**\nWhat official AI guidance, frameworks, or policies already exist for the New Zealand public sector (e.g. from DIA, the Public Service Commission, Stats NZ, GCDO), and what do they actually require or recommend?\n\n**Why it matters / what decision it informs**\nGrounds any AI-policy work in what NZ has already published, so we build on it rather than reinventing or contradicting it.\n\n**Output:** a cited finding in `research/findings/ai-policy/` using `research/TEMPLATE.md`. Prefer primary government sources; mark confidence; note anything dated or superseded.\n\n_Good first issue: clear scope, official sources, immediately useful as a reference._",
+      "stage": "research",
+      "status": "in-review",
+      "domain": "ai-policy",
+      "labels": [
+        "good first issue",
+        "stage: research",
+        "status: in-review",
+        "domain: ai-policy"
+      ],
+      "author": {
+        "login": "adam91holt",
+        "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+        "url": "https://github.com/adam91holt"
+      },
+      "assignees": [
+        {
+          "login": "adam91holt",
+          "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+          "url": "https://github.com/adam91holt"
+        }
+      ],
+      "createdAt": "2026-07-01T21:25:40Z",
+      "updatedAt": "2026-07-01T22:27:29Z",
+      "comments": 2,
+      "commentsList": [
+        {
+          "author": "adam91holt",
+          "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+          "body": "Claiming this - starting now.",
+          "createdAt": "2026-07-01T21:49:57Z"
+        },
+        {
+          "author": "adam91holt",
+          "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+          "body": "🔍 Work submitted in #7 — moving to **in review**. It needs an adversarial review from a *different identity than the author* before it can merge (see `review_work.sh` / branch protection).",
+          "createdAt": "2026-07-01T22:27:29Z"
+        }
+      ],
+      "reactions": 0
+    },
+    {
+      "number": 7,
+      "title": "research: document NZ public sector AI guidance",
+      "state": "open",
+      "isPR": true,
+      "merged": false,
+      "url": "https://github.com/thecolab-ai/the-for-good-project/pull/7",
+      "body": "Closes #6.\n\n## What changed\n\nAdds a cited research finding at `research/findings/ai-policy/nz-public-sector-ai-guidance.md` answering what official AI guidance, frameworks, and policies currently exist for New Zealand public-sector/public-service AI use.\n\n## Summary\n\n- Maps the GCDO-led public-service AI framework, GenAI guidance, work programme, and toolkit.\n- Captures Stats NZ/Data.govt algorithm-governance material, including the Algorithm Charter and Algorithm Impact Assessment process.\n- Notes relevant privacy, records, procurement, and agency-level policy material, plus the national light-touch AI policy context.\n- Marks confidence, load-bearing claims, limits, and follow-up questions.\n\n## Validation\n\n- `git diff --cached --check`\n- `git diff --check`\n- `gh issue view 6 --json number,title,labels,assignees,state,url`\n- `gh search issues --repo thecolab-ai/the-for-good-project \"AI guidance public sector\" --state open --json number,title,url,state`\n\nNo parent issue was identified in #6.",
+      "stage": "none",
+      "status": "none",
+      "domain": null,
+      "labels": [],
+      "author": {
+        "login": "adam91holt",
+        "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+        "url": "https://github.com/adam91holt"
+      },
+      "assignees": [],
+      "createdAt": "2026-07-01T21:56:02Z",
+      "updatedAt": "2026-07-01T21:56:02Z",
+      "comments": 0,
+      "reactions": 0
+    }
+  ],
   "leaderboard": [
     {
       "login": "adam91holt",
       "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
       "url": "https://github.com/adam91holt",
-      "issuesAssigned": 0,
+      "issuesAssigned": 1,
       "prsMerged": 0,
-      "prsOpened": 0,
+      "prsOpened": 1,
+      "findingsAuthored": 0,
+      "commits": 3,
+      "reviewsGiven": 0,
+      "score": 6,
+      "domains": [
+        "ai-policy"
+      ],
+      "researchScore": 6,
+      "reviewScore": 0
+    },
+    {
+      "login": "thecolab-clawd",
+      "avatar": "https://avatars.githubusercontent.com/u/298857011?v=4",
+      "url": "https://github.com/thecolab-clawd",
+      "issuesAssigned": 0,
+      "prsMerged": 1,
+      "prsOpened": 1,
       "findingsAuthored": 0,
       "commits": 1,
-      "score": 1,
-      "domains": []
+      "reviewsGiven": 0,
+      "score": 5,
+      "domains": [],
+      "researchScore": 5,
+      "reviewScore": 0
     }
   ],
   "findings": [],
   "sources": [],
   "activity": [
     {
+      "type": "pr",
+      "title": "fix(web): make dashboard mobile responsive",
+      "url": "https://github.com/thecolab-ai/the-for-good-project/pull/8",
+      "actor": "thecolab-clawd",
+      "avatar": "https://avatars.githubusercontent.com/u/298857011?v=4",
+      "at": "2026-07-01T22:43:07Z",
+      "meta": "merged"
+    },
+    {
       "type": "issue",
       "title": "[Research] What NZ government AI guidance already exists for the public sector?",
       "url": "https://github.com/thecolab-ai/the-for-good-project/issues/6",
       "actor": "adam91holt",
       "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
-      "at": "2026-07-01T21:25:40Z",
+      "at": "2026-07-01T22:27:29Z",
       "meta": "research"
+    },
+    {
+      "type": "issue",
+      "title": "[Discover] Small NZ charities miss grants they're eligible for",
+      "url": "https://github.com/thecolab-ai/the-for-good-project/issues/2",
+      "actor": "adam91holt",
+      "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+      "at": "2026-07-01T22:18:05Z",
+      "meta": "discover"
+    },
+    {
+      "type": "pr",
+      "title": "research: document NZ public sector AI guidance",
+      "url": "https://github.com/thecolab-ai/the-for-good-project/pull/7",
+      "actor": "adam91holt",
+      "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
+      "at": "2026-07-01T21:56:02Z",
+      "meta": "open"
     },
     {
       "type": "issue",
@@ -276,15 +470,6 @@
       "actor": "adam91holt",
       "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
       "at": "2026-07-01T21:25:35Z",
-      "meta": "discover"
-    },
-    {
-      "type": "issue",
-      "title": "[Discover] Small NZ charities miss grants they're eligible for",
-      "url": "https://github.com/thecolab-ai/the-for-good-project/issues/2",
-      "actor": "adam91holt",
-      "avatar": "https://avatars.githubusercontent.com/u/9592417?v=4",
-      "at": "2026-07-01T21:25:34Z",
       "meta": "discover"
     },
     {

@@ -62,22 +62,63 @@ to be a *distinct GitHub identity*. Pick one:
   in `REVIEW_GITHUB_TOKEN`; the script posts the review and approval as that
   account. This is the simplest local setup.
 - **A GitHub App** installation token (App reviews count as a distinct actor).
-- **CI** (`.github/workflows/review.yml`): a workflow reviews as
-  `github-actions[bot]`, which is inherently not the author. Opt-in; needs a
-  model-auth secret (`CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY`).
+
+> Note: running the reviewer in **CI** would work identity-wise (it'd review as
+> `github-actions[bot]`, not the author), but the model tokens would then come
+> from **one** secret on the repo — i.e. the owner pays for every review. That
+> breaks the whole "collective's spare tokens" model, so review runs locally on
+> contributors' own machines instead.
 
 If you run `review_work.sh` with no `REVIEW_GITHUB_TOKEN`, it reviews as *you* and
 skips any PR you authored — safe, but it won't help on your own PRs.
 
-## The merge gate (branch protection on `main`)
+## How a PR merges
 
-`main` is protected so nothing merges without a clean, independent review:
+`main` is branch-protected. A PR merges when, and only when:
 
-- ✅ a passing `for-good/adversarial-review` status check (an agent actually reviewed), and
-- ✅ at least one approving review **from someone other than the author**, and
+- ✅ a passing `for-good/adversarial-review` status check (an agent actually reviewed), **and**
+- ✅ at least one approving review **from someone other than the author**, **and**
 - ✅ all conversations resolved.
 
-The author can't satisfy these alone — which is the point.
+The flow, fully distributed — nobody babysits a merge:
+
+1. `start_work.sh` opens the PR **and turns on GitHub auto-merge** (`gh pr merge --auto`).
+2. Someone else runs `review_work.sh` on it (their tokens, their identity) → on PASS
+   it approves and sets the check.
+3. GitHub sees the gate satisfied and **merges automatically**. A tiny label-only
+   workflow (`.github/workflows/issue-status.yml`, zero model tokens) flips the
+   linked issue to `status: done`.
+
+On NEEDS_WORK the check fails, auto-merge stays parked, the author revises, and it
+gets re-reviewed.
+
+### Who can actually gate a merge — the write-access reality
+
+GitHub only counts a review (approval **or** status check) toward the gate if the
+reviewer has **write access**. So read-only forkers can post an agent verdict as a
+*comment*, but it won't merge anything. That's by design — it stops sockpuppets
+from self-approving. To keep this scalable **without** paying for reviews centrally:
+
+- Contributors research via fork PRs (no write needed).
+- **Earned trust:** contributors who've landed a few solid findings get added to a
+  **Reviewers** team with write access. Their `review_work.sh` runs then count.
+  Review credit on the leaderboard is the visible path to getting there — so the
+  reviewer pool grows in step with the researcher pool, using the collective's own
+  tokens, at no central cost.
+- Optional stricter setting: require **two** independent PASSes for sensitive
+  domains (child-welfare, etc.).
+
+### Research credit vs review credit
+
+The leaderboard scores two distinct things, so reviewing (the chore) is rewarded,
+not just researching (the fun part):
+
+- **Research** — findings authored, PRs merged, issues claimed, commits.
+- **Review** — adversarial reviews given on PRs you did **not** author.
+
+Both feed an overall total, but the Researchers and Reviewers boards are ranked
+separately. If nobody reviews, the queue jams — so review points are how the
+collective keeps itself unblocked.
 
 ## Cost & safety notes
 

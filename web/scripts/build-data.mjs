@@ -69,6 +69,33 @@ async function main() {
 
   const mergedByNumber = new Map(rawPulls.map((p) => [p.number, !!p.merged_at]));
 
+  // PR reviews (who reviewed whose PR) — used for review credit. A review counts
+  // only if it's a substantive verdict (APPROVED / CHANGES_REQUESTED) and the
+  // reviewer is not the PR author. Counted once per (reviewer, PR).
+  const reviewsGiven = new Map();  // login -> Set(prNumbers)
+  try {
+    let after = null;
+    for (let i = 0; i < 10; i++) {
+      const q = `query($cursor:String){repository(owner:"${OWNER}",name:"${NAME}"){pullRequests(first:50,after:$cursor,states:[OPEN,MERGED,CLOSED]){pageInfo{hasNextPage endCursor} nodes{number author{login} reviews(first:50){nodes{author{login} state}}}}}}`;
+      const gres = await fetch(`${API}/graphql`, { method: "POST", headers, body: JSON.stringify({ query: q, variables: { cursor: after } }) });
+      if (!gres.ok) { console.warn("reviews graphql:", gres.status); break; }
+      const data = (await gres.json())?.data?.repository?.pullRequests;
+      if (!data) break;
+      for (const pr of data.nodes) {
+        const prAuthor = pr.author?.login;
+        for (const rv of pr.reviews.nodes) {
+          const who = rv.author?.login;
+          if (!who || who === prAuthor) continue;
+          if (rv.state !== "APPROVED" && rv.state !== "CHANGES_REQUESTED") continue;
+          if (!reviewsGiven.has(who)) reviewsGiven.set(who, new Set());
+          reviewsGiven.get(who).add(pr.number);
+        }
+      }
+      if (!data.pageInfo.hasNextPage) break;
+      after = data.pageInfo.endCursor;
+    }
+  } catch (e) { console.warn("reviews unavailable:", e.message); }
+
   // --- issues + PRs ---
   const issues = [];
   for (const it of rawIssues) {
@@ -166,7 +193,7 @@ async function main() {
   const ensure = (p) => {
     if (!p) return null;
     if (!people.has(p.login))
-      people.set(p.login, { login: p.login, avatar: p.avatar, url: p.url, issuesAssigned: 0, prsMerged: 0, prsOpened: 0, findingsAuthored: 0, commits: 0, score: 0, domains: new Set() });
+      people.set(p.login, { login: p.login, avatar: p.avatar, url: p.url, issuesAssigned: 0, prsMerged: 0, prsOpened: 0, findingsAuthored: 0, commits: 0, reviewsGiven: 0, score: 0, domains: new Set() });
     return people.get(p.login);
   };
   for (const i of realIssues) for (const a of i.assignees) { const r = ensure(a); if (r && i.domain) r.domains.add(i.domain); if (r) r.issuesAssigned++; }
@@ -175,13 +202,21 @@ async function main() {
   for (const f of findings) {
     const login = f.author && f.author !== "unknown" ? f.author.replace(/^@/, "") : null;
     if (!login) continue;
-    if (!people.has(login)) people.set(login, { login, avatar: `https://github.com/${login}.png`, url: `https://github.com/${login}`, issuesAssigned: 0, prsMerged: 0, prsOpened: 0, findingsAuthored: 0, commits: 0, score: 0, domains: new Set() });
+    if (!people.has(login)) people.set(login, { login, avatar: `https://github.com/${login}.png`, url: `https://github.com/${login}`, issuesAssigned: 0, prsMerged: 0, prsOpened: 0, findingsAuthored: 0, commits: 0, reviewsGiven: 0, score: 0, domains: new Set() });
     const r = people.get(login); r.findingsAuthored++; if (f.domain) r.domains.add(f.domain);
+  }
+  for (const [login, prset] of reviewsGiven) {
+    if (!people.has(login)) people.set(login, { login, avatar: `https://github.com/${login}.png`, url: `https://github.com/${login}`, issuesAssigned: 0, prsMerged: 0, prsOpened: 0, findingsAuthored: 0, commits: 0, reviewsGiven: 0, score: 0, domains: new Set() });
+    people.get(login).reviewsGiven = prset.size;
   }
   const BOTS = new Set(["github-actions[bot]", "dependabot[bot]"]);
   const leaderboard = [...people.values()]
     .filter((p) => !BOTS.has(p.login))
-    .map((p) => ({ ...p, domains: [...p.domains], score: p.findingsAuthored * 5 + p.prsMerged * 3 + p.issuesAssigned * 2 + p.prsOpened + Math.min(p.commits, 50) }))
+    .map((p) => {
+      const researchScore = p.findingsAuthored * 5 + p.prsMerged * 3 + p.issuesAssigned * 2 + p.prsOpened + Math.min(p.commits, 50);
+      const reviewScore = p.reviewsGiven * 4;
+      return { ...p, domains: [...p.domains], researchScore, reviewScore, score: researchScore + reviewScore };
+    })
     .filter((p) => p.score > 0)
     .sort((a, b) => b.score - a.score);
 
@@ -230,6 +265,7 @@ async function main() {
       mergedPRs: prs.filter((p) => p.merged).length,
       findings: findings.length,
       contributors: leaderboard.length,
+      reviews: [...reviewsGiven.values()].reduce((n, s) => n + s.size, 0),
       sources: new Set(sources.map((s) => s.url)).size,
       byStage: count(openIssues, "stage"),
       byStatus: count(openIssues, "status"),

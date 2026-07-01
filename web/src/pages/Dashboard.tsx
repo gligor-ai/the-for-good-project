@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Activity, BookOpen, FileText, FolderGit2, Link2, Users, ArrowRight, ScanEye } from "lucide-react";
+import { Activity, BookOpen, FolderGit2, Link2, Users, ArrowRight, ScanEye } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, Cell,
 } from "recharts";
@@ -55,7 +55,7 @@ export default function Dashboard() {
         <StatCard label="Findings" value={stats.findings} icon={BookOpen} accent="#0EA5E9" />
         <StatCard label="Contributors" value={stats.contributors} icon={Users} accent="#8B5CF6" />
         <StatCard label="Data sources" value={stats.sources} icon={Link2} accent="#C2410C" />
-        <StatCard label="In review" value={reviewQueue.length} icon={ScanEye} accent="#1D76DB" />
+        <StatCard label="Reviews given" value={stats.reviews} icon={ScanEye} accent="#1D76DB" />
         <StatCard label="Completed" value={stats.closedIssues} icon={FolderGit2} accent="#0E8A16" />
       </section>
 

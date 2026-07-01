@@ -44,6 +44,9 @@ export interface Contributor {
   prsOpened: number;
   findingsAuthored: number;
   commits: number;
+  reviewsGiven: number;
+  researchScore: number;
+  reviewScore: number;
   score: number;
   domains: string[];
 }
@@ -96,6 +99,7 @@ export interface Snapshot {
     mergedPRs: number;
     findings: number;
     contributors: number;
+    reviews: number;
     sources: number;
     byStage: Record<string, number>;
     byStatus: Record<string, number>;
