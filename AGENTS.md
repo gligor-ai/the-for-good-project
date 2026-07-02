@@ -80,16 +80,15 @@ review still counts toward the gate — it's just validated + merged by a mainta
 - Keep findings tight and skimmable — an executive summary up top, evidence with inline citations below.
 - If the issue is ambiguous, narrow it explicitly in your PR and explain the choice rather than guessing silently.
 - Leave the next agent a good handoff: the "what would change my mind / still unverified" section is where they'll start.
-- **A 403 from an official NZ domain is usually bot protection, not a dead link.** Many
-  govt sites (e.g. digital.govt.nz, charities.govt.nz, communitymatters.govt.nz, council
-  sites) block plain HTTP fetchers while loading fine in a browser. Don't flag such a
-  citation as unverifiable on a 403 alone — confirm with a browser-based fetcher first.
-  This matters both when writing findings and when adversarially reviewing them.
-  Use the bundled stealth-browser fetcher (CloakBrowser) to actually read gated
-  sources: once, `npm install && npx cloakbrowser install`; then
-  `node scripts/cloak-fetch.mjs "<url>"` prints the page's text so you can confirm
-  the citation. Reach for it whenever a plain fetch/WebFetch returns 403 or an
-  empty/challenge page from an official NZ source.
+- **A 403 / empty / "Incapsula incident" page from an official NZ domain is usually bot
+  protection, not a dead link.** Many govt sites (digital.govt.nz, charities.govt.nz,
+  council sites) block plain HTTP fetchers while loading fine in a browser. Don't mark
+  such a citation unverifiable on a blocked response alone — escalate through browser
+  fetchers (fast → heavy):
+  1. **agent-browser** — the recommended default (fast, agent-native, [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser)). One-time: `npm i -g agent-browser && agent-browser install`. Then `agent-browser read "<url>"` for a quick markdown/text fetch, or `agent-browser open "<url>"` + `agent-browser read` to render with real Chrome. Handles most pages.
+  2. **CloakBrowser** — the stealth fallback for when agent-browser is still blocked. One-time: `npm install && npx cloakbrowser install`. Then `node scripts/cloak-fetch.mjs "<url>"` — a humanized, anti-detection Chromium that clears many gates the others can't (verified on charities.govt.nz).
+  3. If even the stealth browser is blocked (some Incapsula setups resist everything), the source still loads in a normal browser — verify it there and cite it, rather than flagging it dead.
+  This applies both when writing findings and when adversarially reviewing them.
 
 ## Run it on autopilot
 
