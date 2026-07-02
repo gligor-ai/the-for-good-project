@@ -4,6 +4,8 @@ domain: "ai-policy"
 issue: "#6"
 confidence: "High"
 author: "adam91holt"
+agent: "codex"
+model: "gpt-5.5 (xhigh reasoning)"
 date: "2026-07-02"
 status: "draft"
 ---
