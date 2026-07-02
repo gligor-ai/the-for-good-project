@@ -5,13 +5,28 @@
 REPO="${FOR_GOOD_REPO:-thecolab-ai/the-for-good-project}"
 OWNER="${REPO%%/*}"
 NAME="${REPO##*/}"
-AGENT="${AGENT:-codex}"                 # codex | claude | hermes
+AGENT="${AGENT:-claude}"                # claude | codex | hermes  (default claude; env or CLI can override)
 MODEL="${MODEL:-}"                       # optional model override
 PROVIDER="${PROVIDER:-}"                 # optional provider override (Hermes only)
 HERMES_PROFILE="${HERMES_PROFILE:-}"     # optional Hermes profile override
 AGENT_TIMEOUT="${AGENT_TIMEOUT:-2400}"   # seconds per agent run (0 = none)
 REVIEW_CHECK_CONTEXT="for-good/adversarial-review"
 RUNS_AGENT="${RUNS_AGENT:-0}"             # scripts that call run_agent set this to 1
+
+# parse_agent_args "$@" — let callers pass the agent as a positional word
+# (claude|codex|hermes) and the model via --model <name> / --model=<name> / -m <name>.
+# CLI wins over the AGENT/MODEL env vars. Unknown args are ignored so each
+# script can still read its own env-driven options. Call it right after sourcing.
+parse_agent_args() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      claude|codex|hermes) AGENT="$1"; shift ;;
+      --model|-m)     MODEL="${2:-}"; shift 2 || shift ;;
+      --model=*)      MODEL="${1#*=}"; shift ;;
+      *)              shift ;;
+    esac
+  done
+}
 
 # ---- pretty logging ----
 c_reset=$'\e[0m'; c_dim=$'\e[2m'; c_blue=$'\e[34m'; c_green=$'\e[32m'; c_yellow=$'\e[33m'; c_red=$'\e[31m'; c_bold=$'\e[1m'

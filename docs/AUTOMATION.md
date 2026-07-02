@@ -42,14 +42,21 @@ issue. Runs your agent on it following the project method, and moves it to
 **in review** once the agent opens (or updates) a PR.
 
 ```bash
-./start_work.sh                 # work the queue until it's empty
-AGENT=claude ./start_work.sh    # use `claude -p` instead of the default `codex`
-AGENT=hermes ./start_work.sh    # use `hermes chat` instead of the default `codex`
-HERMES_PROFILE=reviewer AGENT=hermes ./start_work.sh
+./start_work.sh                 # work the queue until it's empty (default agent: claude)
+./start_work.sh codex           # use `codex exec` instead
+./start_work.sh hermes          # use `hermes chat` instead
+./start_work.sh --model <name>  # override the agent model
+./start_work.sh codex --model gpt-5.5
+HERMES_PROFILE=reviewer ./start_work.sh hermes
 STAGE=research ./start_work.sh  # only pick up research-stage issues
 MAX=1 ./start_work.sh           # one issue, then stop
 DRY_RUN=1 ./start_work.sh       # show what it would do, change nothing
 ```
+
+The agent can be given as a positional word (`claude`, `codex`, or `hermes`)
+and the model via `--model <name>`; both override the `AGENT` / `MODEL` env
+vars. `claude` is the default. Hermes also honours `PROVIDER`,
+`HERMES_PROFILE`, and `HERMES_FLAGS`.
 
 For a **new issue** it claims (assigns you + `status: claimed`), creates a fresh
 worktree from `origin/main`, hands the issue to the agent with the method baked
