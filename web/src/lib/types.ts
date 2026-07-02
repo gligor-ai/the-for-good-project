@@ -1,5 +1,5 @@
 export type Stage = "discover" | "research" | "ideate" | "build" | "none";
-export type StatusKey = "available" | "claimed" | "in-review" | "blocked" | "done" | "none";
+export type StatusKey = "available" | "claimed" | "in-review" | "changes-requested" | "needs-synthesis" | "awaiting-direction" | "blocked" | "done" | "none";
 
 export interface Person {
   login: string;
@@ -59,6 +59,7 @@ export interface FindingSource {
 
 export interface Finding {
   path: string;
+  slug: string;
   title: string;
   domain: string;
   confidence: "High" | "Medium" | "Low" | "Unknown";
@@ -68,6 +69,7 @@ export interface Finding {
   date: string;
   url: string;
   summary: string;
+  body: string;
   sources: FindingSource[];
 }
 

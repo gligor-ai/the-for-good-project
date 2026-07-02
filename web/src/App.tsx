@@ -1,9 +1,10 @@
-import { createHashRouter } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Board from "@/pages/Board";
 import IssueDetail from "@/pages/IssueDetail";
 import Findings from "@/pages/Findings";
+import FindingDetail from "@/pages/FindingDetail";
 import Sources from "@/pages/Sources";
 import Leaderboard from "@/pages/Leaderboard";
 import Review from "@/pages/Review";
@@ -12,7 +13,7 @@ import Methodology from "@/pages/Methodology";
 import Contribute from "@/pages/Contribute";
 import NotFound from "@/pages/NotFound";
 
-export const router = createHashRouter([
+export const router = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
@@ -20,6 +21,7 @@ export const router = createHashRouter([
       { path: "/board", element: <Board /> },
       { path: "/issue/:number", element: <IssueDetail /> },
       { path: "/findings", element: <Findings /> },
+      { path: "/findings/*", element: <FindingDetail /> },
       { path: "/sources", element: <Sources /> },
       { path: "/leaderboard", element: <Leaderboard /> },
       { path: "/review", element: <Review /> },
@@ -29,4 +31,7 @@ export const router = createHashRouter([
       { path: "*", element: <NotFound /> },
     ],
   },
-]);
+], {
+  // Served from a GitHub Pages project subpath (see vite `base`).
+  basename: import.meta.env.BASE_URL.replace(/\/$/, ""),
+});
