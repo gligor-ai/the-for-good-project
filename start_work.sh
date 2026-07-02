@@ -45,10 +45,36 @@ work_prompt() {  # $1 = issue number
   title="$(gh issue view "$n" --repo "$REPO" --json title --jq .title)"
   body="$(gh issue view "$n" --repo "$REPO" --json body --jq .body)"
   labels="$(issue_labels "$n")"
-  domain="$(printf '%s' "$labels" | tr ',' '\n' | sed -n 's/^domain: //p' | head -1)"
-  stage="$(printf '%s' "$labels" | tr ',' '\n' | sed -n 's/^stage: //p' | head -1)"
+  domain="$(label_field "$labels" "domain: ")"
+  stage="$(label_field "$labels" "stage: ")"
+  local stream; stream="$(label_field "$labels" "stream:")"
   local prov_model
   if [ -n "${MODEL:-}" ]; then prov_model="$MODEL"; else prov_model="the exact model identifier you are running as"; fi
+  # Bounded fan-out (docs/STREAMS.md): the agent on a root issue (depth 0) may
+  # open sub-issues, an agent on a sub-issue (depth 1) may open one more level,
+  # and depth >= 2 may not fan out at all. WHITELIST discover/research only —
+  # a missing or nonstandard stage label must fail closed, not open.
+  local depth fanout; depth="$(issue_depth "$n")"
+  if [ "$stage" != "discover" ] && [ "$stage" != "research" ]; then
+    fanout="Do NOT open any sub-issues from this issue — only discover/research work
+may fan out; everything else is human-gated (docs/STREAMS.md)."
+  elif [ "$depth" -lt 2 ]; then
+    fanout="Fan-out is ALLOWED here (this issue is at depth $depth of max 2 in its stream).
+If the scope is genuinely too big for ONE high-quality output, split off the
+parts you will NOT cover as 2-5 CHUNKY sub-issues — real researchable
+questions someone can spend hours on, never micro-tasks:
+  gh issue create --repo $REPO --title \"research: <question>\" \\
+    --label \"stage: research\" --label \"status: available\" \\
+    --body \"Part of #$n.${stream:+ Stream: #$stream.} <the question, why it matters, where to look>\"
+Then STILL complete this issue: narrow it to the core question, answer that to
+the full method standard, and say in your PR exactly what you split off."
+  else
+    fanout="Do NOT open any sub-issues — this issue is at the fan-out depth limit
+(depth $depth of max 2, see docs/STREAMS.md). If the scope is still too big,
+narrow the question explicitly in your PR and list what you left uncovered
+under 'what would change this conclusion'; the human steward decides at
+synthesis whether more work is spawned."
+  fi
   cat <<EOF
 You are an autonomous contributor to The For Good Project
 (github.com/$REPO). You are working inside a dedicated git worktree of the
@@ -78,6 +104,9 @@ Where the output goes (match the issue's stage):
 - build    → projects/<slug>/                       (see projects/README.md)
 Use a short kebab-case <slug>.
 
+Splitting big work:
+$fanout
+
 Provenance (required): in the output file's frontmatter, set these fields exactly so
 we can track what produced it:
 - agent: '$AGENT'
@@ -89,9 +118,15 @@ Then, using git and the gh CLI (both are already authenticated):
 3. Push the branch to origin.
 4. Open a pull request whose body contains "Closes #$n" so it links to the
    issue. Use: gh pr create --fill --body "Closes #$n. <one-line summary>".
-
-IMPORTANT: do NOT touch issue labels or assignees — the runner manages issue
-status. Do exactly one issue (#$n). When finished, print the PR URL.
+${stream:+   The PR body must also contain the exact text  Stream: #$stream  on the same
+   line, so the PR stays tracked to its stream.
+}
+IMPORTANT: do NOT change labels or assignees on EXISTING issues — the runner
+manages issue status. (The one exception: labels on NEW sub-issues you create
+via the fan-out instruction above.) Do exactly one issue (#$n). Respect the
+human gates (docs/STREAMS.md): never open ideate/build follow-up issues, and
+never write or edit streams/ overview docs — those are human steward
+decisions. When finished, print the PR URL.
 EOF
 }
 
