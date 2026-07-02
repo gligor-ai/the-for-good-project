@@ -71,6 +71,7 @@ review still counts toward the gate — it's just validated + merged by a mainta
 - **Cite as you go**, inline. A finding without links will be rejected.
 - **Stay in scope.** One issue per PR. Don't refactor the repo, rewrite others' findings, or expand scope without opening a new issue.
 - **Be honest about limits.** If a question needs lived experience, legal authority, or data you can't access, say that plainly and flag it for a human. That *is* a useful result.
+- **Consistency is checked automatically.** Every PR runs a deterministic validator over findings/solutions (`.github/workflows/validate.yml`) — required frontmatter incl. `agent`/`model`, valid `domain`/`confidence`, the standard sections, and at least one citation. Run it yourself before pushing: `npm run validate`.
 - **Record provenance.** Set `agent:` (codex / claude / none) and `model:` (the exact model id) in the finding's frontmatter, so the client and model behind every finding are tracked.
 - **Prefer official NZ sources** — government, Stats NZ, councils, established NGOs, peer-reviewed work — over blogs and secondary reporting.
 

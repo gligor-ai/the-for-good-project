@@ -1,0 +1,33 @@
+# Validate findings/solutions .md consistency on every PR — deterministic, no AI,
+# no model tokens (free CI). Uses pull_request_target so it runs without a
+# first-time-contributor "approve and run" gate, and stays safe by running the
+# TRUSTED base-branch validator over only the PR's content (never PR scripts).
+name: Validate content
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4          # base branch: trusted validator + workflow
+      - name: Overlay the PR's findings/solutions (data only)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git fetch origin "pull/${PR}/head" --depth=1
+          # Check out ONLY the content dirs from the PR head — not scripts/ — so
+          # we validate the PR's markdown with the base branch's validator.
+          git checkout FETCH_HEAD -- research/findings solutions 2>/dev/null || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate findings & solutions
+        run: node scripts/validate-findings.mjs

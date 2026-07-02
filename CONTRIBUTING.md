@@ -63,6 +63,7 @@ A finding that honestly reads _"Low confidence, one dated source, needs a Stats 
 - [ ] Confidence marked (High/Med/Low) on findings
 - [ ] Stated what would change the conclusion / what's unverified
 - [ ] No personal data, no overstated claims
+- [ ] Passes `npm run validate` (frontmatter incl. agent/model, sections, citations) — CI checks this on every PR
 
 ## Good conduct
 

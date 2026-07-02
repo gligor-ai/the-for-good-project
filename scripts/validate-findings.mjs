@@ -1,0 +1,95 @@
+#!/usr/bin/env node
+// Validate consistency of research findings and solutions markdown.
+// Deterministic (no AI, no tokens). Run locally: `node scripts/validate-findings.mjs`
+// or `npm run validate`. Also runs in CI on every PR (.github/workflows/validate.yml).
+import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
+import path from "node:path";
+
+const ROOT = process.cwd();
+const DOMAINS = ["child-welfare", "grant-access", "civic-transparency", "ai-policy", "biosecurity", "other"];
+const LEVELS = ["High", "Medium", "Low"];
+const SKIP = new Set(["README.md", "TEMPLATE.md"]);
+
+function walk(dir) {
+  if (!existsSync(dir)) return [];
+  const out = [];
+  for (const e of readdirSync(dir)) {
+    const full = path.join(dir, e);
+    if (statSync(full).isDirectory()) out.push(...walk(full));
+    else if (e.endsWith(".md") && !SKIP.has(e)) out.push(full);
+  }
+  return out;
+}
+
+function parseFrontmatter(text) {
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!m) return null;
+  const fm = {};
+  for (const line of m[1].split(/\r?\n/)) {
+    const mm = line.match(/^([A-Za-z_]+):\s*(.*)$/);
+    if (!mm) continue;
+    const raw = mm[2].trim();
+    const q = raw.match(/^"([^"]*)"|^'([^']*)'/);
+    fm[mm[1]] = q ? (q[1] ?? q[2]) : raw.split(/\s+#/)[0].trim();
+  }
+  return { fm, body: text.slice(m[0].length) };
+}
+
+const isPlaceholder = (v) => !v || /[<>]/.test(v) || /YYYY-MM-DD|exact model id|your name or handle|the question you answered/i.test(v);
+const hasSection = (body, name) => new RegExp(`^#{2,3}\\s*${name}`, "mi").test(body);
+const hasCitation = (body) => /\[[^\]]+\]\(https?:\/\/[^)\s]+\)/.test(body);
+
+function checkCommon(fm, errs) {
+  for (const f of ["title", "issue", "author", "agent", "model", "date"]) {
+    if (isPlaceholder(fm[f])) errs.push(`frontmatter '${f}' is missing or still a placeholder`);
+  }
+  if (!DOMAINS.includes(fm.domain)) errs.push(`frontmatter 'domain' must be one of: ${DOMAINS.join(", ")} (got '${fm.domain ?? ""}')`);
+  if (fm.issue && !/#\d+/.test(fm.issue)) errs.push(`frontmatter 'issue' should reference an issue like '#12' (got '${fm.issue}')`);
+  if (fm.date && !/^\d{4}-\d{2}-\d{2}$/.test(fm.date)) errs.push(`frontmatter 'date' must be YYYY-MM-DD (got '${fm.date}')`);
+  // model may be blank only when the work was unassisted (agent: none)
+  if (fm.agent && fm.agent.toLowerCase() !== "none" && isPlaceholder(fm.model))
+    errs.push(`frontmatter 'model' is required unless agent is 'none'`);
+}
+
+function validateFinding(file) {
+  const errs = [];
+  const parsed = parseFrontmatter(readFileSync(file, "utf8"));
+  if (!parsed) return ["no YAML frontmatter (--- block) at the top of the file"];
+  const { fm, body } = parsed;
+  checkCommon(fm, errs);
+  if (!LEVELS.includes(fm.confidence)) errs.push(`frontmatter 'confidence' must be High/Medium/Low (got '${fm.confidence ?? ""}')`);
+  const folder = path.basename(path.dirname(file));
+  if (DOMAINS.includes(folder) && fm.domain && fm.domain !== folder)
+    errs.push(`'domain: ${fm.domain}' does not match its folder 'research/findings/${folder}/'`);
+  if (!hasSection(body, "Executive answer")) errs.push("missing '## Executive answer' section");
+  if (!hasSection(body, "What would change this conclusion")) errs.push("missing '## What would change this conclusion' section");
+  if (!hasSection(body, "Sources")) errs.push("missing '## Sources' section");
+  if (!hasCitation(body)) errs.push("no citations found — every finding needs at least one inline source link");
+  return errs;
+}
+
+function validateSolution(file) {
+  const errs = [];
+  const parsed = parseFrontmatter(readFileSync(file, "utf8"));
+  if (!parsed) return ["no YAML frontmatter (--- block) at the top of the file"];
+  const { fm } = parsed;
+  checkCommon(fm, errs);
+  if (!LEVELS.includes(fm.feasibility)) errs.push(`frontmatter 'feasibility' must be High/Medium/Low (got '${fm.feasibility ?? ""}')`);
+  if (isPlaceholder(fm.based_on) || fm.based_on === "[]") errs.push("frontmatter 'based_on' must link the finding(s) this builds on");
+  return errs;
+}
+
+const findings = walk(path.join(ROOT, "research", "findings"));
+const solutions = walk(path.join(ROOT, "solutions"));
+let failed = 0, checked = 0;
+for (const [files, fn, kind] of [[findings, validateFinding, "finding"], [solutions, validateSolution, "solution"]]) {
+  for (const file of files) {
+    checked++;
+    const rel = path.relative(ROOT, file);
+    const errs = fn(file);
+    if (errs.length) { failed++; console.log(`\n✗ ${rel}`); for (const e of errs) console.log(`    - ${e}`); }
+  }
+}
+if (checked === 0) { console.log("No findings or solutions to validate."); process.exit(0); }
+if (failed) { console.log(`\n${failed}/${checked} file(s) failed validation. Fix the items above.`); process.exit(1); }
+console.log(`✓ All ${checked} finding/solution file(s) valid.`);
